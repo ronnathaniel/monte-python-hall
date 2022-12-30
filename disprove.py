@@ -10,7 +10,7 @@ class DoorCar:
     pass
 
 
-class Random:
+class NoRepeatRandom:
     def __init__(self):
         self.last = None
 
@@ -22,7 +22,7 @@ class Random:
         return r
 
 
-smart_randrange = Random()
+smart_randrange = NoRepeatRandom()
 
 
 def simulate(
@@ -31,10 +31,7 @@ def simulate(
         utilize_real_random: bool = True,
 ):
     doors = [DoorGoat()] * door_num
-    doors_opened_indexes = []
-
     randr = randrange if utilize_real_random else smart_randrange
-
     car_index = randr(0, door_num)
     first_selection_index = randr(0, door_num)
     doors[car_index] = DoorCar()
@@ -47,15 +44,17 @@ def simulate(
     else:
         second_selection_option_index = car_index
 
-    for i, door in enumerate(doors):
-        if type(door) is DoorGoat:
-            if (
-                    car_chosen_first and i != second_selection_option_index
-            ) or (
-                not car_chosen_first and i != first_selection_index
-            ):
-                doors_opened_indexes.append(i)
-                door.opened = True
+    # uncomment for use of all doors opened:
+    #
+    # doors_opened_indexes = []
+    # for i, door in enumerate(doors):
+    #     if type(door) is DoorGoat:
+    #         if (
+    #                 car_chosen_first and i != second_selection_option_index
+    #         ) or (
+    #             not car_chosen_first and i != first_selection_index
+    #         ):
+    #             doors_opened_indexes.append(i)
 
     if switch:
         second_selection_index = second_selection_option_index
@@ -68,29 +67,23 @@ def simulate(
 
 
 def run_simulation():
-    randrange_switch_pl = []
-    randrange_no_switch_pl = []
-    smart_randrange_switch_pl = []
-    smart_randrange_no_switch_pl = []
-
     games_to_play = 1_500
     doors_num = 3
 
-    for _ in range(games_to_play):
-        sim = simulate(doors_num, True, True)
-        randrange_switch_pl.append(sim)
-    for _ in range(games_to_play):
-        sim = simulate(doors_num, False, True)
-        randrange_no_switch_pl.append(sim)
+    randrange_switch_pl = [
+        simulate(doors_num, True, True) for _ in range(games_to_play)
+    ]
+    randrange_no_switch_pl = [
+        simulate(doors_num, False, True) for _ in range(games_to_play)
+    ]
+    smart_randrange_switch_pl = [
+        simulate(doors_num, True, False) for _ in range(games_to_play)
+    ]
+    smart_randrange_no_switch_pl = [
+        simulate(doors_num, False, False) for _ in range(games_to_play)
+    ]
 
-    for _ in range(games_to_play):
-        sim = simulate(doors_num, True, False)
-        smart_randrange_switch_pl.append(sim)
-    for _ in range(games_to_play):
-        sim = simulate(doors_num, False, False)
-        smart_randrange_no_switch_pl.append(sim)
-
-    def sprint_true_percentage(arr):
+    def sprint_win_percentage(arr):
         trues = 0
         total = len(arr)
         for item in arr:
@@ -99,10 +92,10 @@ def run_simulation():
         return trues / total * 100
 
     print(f'Simulated {games_to_play} games of each-')
-    print(f'Real Random   w/  Switch = {sprint_true_percentage(randrange_switch_pl):,}% win')
-    print(f'Real Random   w/o Switch = {sprint_true_percentage(randrange_no_switch_pl):,}% win')
-    print(f'Initial Wrong w   Switch = {sprint_true_percentage(smart_randrange_switch_pl):,}% win')
-    print(f'Initial Wrong w/o Switch = {sprint_true_percentage(smart_randrange_no_switch_pl):,}% win')
+    print(f'Real Random   w/  Switch = {sprint_win_percentage(randrange_switch_pl):,}% win')
+    print(f'Real Random   w/o Switch = {sprint_win_percentage(randrange_no_switch_pl):,}% win')
+    print(f'Initial Wrong w   Switch = {sprint_win_percentage(smart_randrange_switch_pl):,}% win')
+    print(f'Initial Wrong w/o Switch = {sprint_win_percentage(smart_randrange_no_switch_pl):,}% win')
 
 
 if __name__ == '__main__':
